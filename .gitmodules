@@ -1,0 +1,3 @@
+[submodule "src/voxel-mesh"]
+	path = src/voxel-mesh
+	url = https://github.com/Quoteme/voxel-mesh.git

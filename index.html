@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>index</title>
+		<meta name="author" content="Luca Leon Happel">
+		<link rel="stylesheet" href="res/css/master.css">
+		<script type="module" src='./src/main.mjs'></script>
+	</head>
+	<body>
+		<div id='menu'>
+			<div id='file'>
+				<div class='storage'>
+					<input id='save' type='button' value='save' />
+					<input id='load' type='button' value='load' />
+					<input id='new' type='button' value='new' />
+				</div>
+				<div class='information'>
+					<input id='name' type='text' placeholder='Name'/>
+					<textarea id='description' placeholder='Description'></textarea>
+					<input id='author' .class='author' type='text' placeholder='Author'/>
+					<div id='dimension'>
+						<label class='size'>x: <input id='dimX' type='number' /></span>
+						<label class='size'>y: <input id='dimY' type='number' /></span>
+						<label class='size'>z: <input id='dimZ' type='number' /></span>
+					</div>
+				</div>
+				<div id='cubePicker'>
+					<div id='newCube' class='cube'>+</div>
+				</div>
+			</div>
+		</div>
+	</body>
+</html>

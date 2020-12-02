@@ -1,0 +1,56 @@
+body {
+	margin: 0px;
+	overflow: hidden
+}
+
+#menu {
+	color: #eee;
+	background-color: #161616;
+	height: 100vh;
+	width: 300px;
+	position: fixed;
+	/* left: -280px; */
+	top: 0px;
+}
+
+#menu:hover {
+	left: 0px;
+}
+
+#menu .author{
+	color: #666;
+}
+
+#menu input, #menu textarea {
+	color: #eee;
+	background-color: #060606;
+	border: none;
+	margin: 2px;
+	padding: 0.5em;
+	border-radius: 5px;
+}
+
+#menu input[type="number"] {
+	width: 30px;
+}
+
+#menu label {
+	color: #888;
+}
+
+#menu #cubePicker {
+	display:grid;
+	grid-template-columns: 1fr 1fr 1fr;
+	column-gap: 3px;
+	row-gap: 3px;
+}
+
+#menu #cubePicker .cube{
+	text-align: center;
+	background-color: #222;
+}
+#menu #cubePicker .cube input{
+	box-sizing: border-box;
+	width: 95%;
+	padding: 3px;
+}

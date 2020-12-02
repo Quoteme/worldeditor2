@@ -1,0 +1,12 @@
+{
+    "source": {
+        "include": ["./README.MD", "./src"],
+        "exclude": [],
+        "includePattern": ".+\\.(js(doc|x)?|mjs)$",
+        "excludePattern": "(^|\\/|\\\\)_"
+    },
+	"opts": {
+        "destination": "./docs/"
+    },
+	"plugins": ["plugins/markdown"]
+}

@@ -1,0 +1,226 @@
+/**
+ * UI (User Interface) module
+ * @module ui
+ * @file Manage the user interface
+ * @author Luca Leon Happel
+ * @see {@link http://threejs.org/docs | THREE.js}
+ * @see {@link https://threejs.org/docs/#examples/en/controls/OrbitControls | THREE.js OrbitControls}
+ * @see {@link https://github.com/quoteme/voxel-mesh | voxel-mesh}
+ * @see module:map
+ */
+
+import * as THREE from './threejs/three.module.js';
+import { OrbitControls } from './threejs/OrbitControls.js';
+import * as MESHER from './voxel-mesh/voxelMesh.mjs';
+import * as MAP from './map.mjs';
+
+let camera, scene, renderer, controls, menu;
+
+/**
+ * Initialize the UI
+ */
+export function init() {
+	initScene();
+	window.addEventListener( 'resize', onWindowResize, false );
+	animate();
+}
+
+/**
+ * Initialize the scene which renders the entire map
+ */
+function initScene() {
+	camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
+	camera.position.z = 400;
+	scene = new THREE.Scene();
+	renderer = new THREE.WebGLRenderer( { antialias: true } );
+	renderer.setPixelRatio( window.devicePixelRatio );
+	renderer.setSize( window.innerWidth, window.innerHeight );
+	document.body.appendChild( renderer.domElement );
+	controls = new OrbitControls( camera, renderer.domElement );
+
+}
+
+/**
+ * Animate the scene
+ */
+function animate() {
+	requestAnimationFrame( animate );
+	controls.update();
+	renderer.render( scene, camera );
+}
+
+function onWindowResize() {
+	camera.aspect = window.innerWidth / window.innerHeight;
+	camera.updateProjectionMatrix();
+	renderer.setSize( window.innerWidth, window.innerHeight );
+}
+
+/**
+ * Creates a group of meshes that represent the Cube
+ * @param {module:map.Cube} cube - The cube to be added in the scene
+ * @returns {THREEjsGroup}
+ */
+function meshifyCube(cube) {
+	let group = new THREE.Group();
+	cube.voxPairs.forEach( ([v,m]) => {
+		let geometry = MESHER.voxToGeometry(v);
+		let material = new THREE.MeshBasicMaterial({
+			color: new THREE.Color(m.r,m.g,m.b),
+			opacity: m.a
+			});
+		let mesh     = new THREE.Mesh(geometry, material);
+		group.add(mesh);
+	} )
+	return group;
+}
+
+/**
+ * Load a map into memory and also make its information accessable
+ * through the menu
+ * @param {module:map.World} world
+ */
+function load(world) {
+	world = MAP.World.fromJSON(JSON.parse(world))
+	// make all UI-elements accessable
+	let name = document.getElementById('name');
+	let description = document.getElementById('description')
+	let author = document.getElementById('author');
+	let dimension = {
+		'x' : document.getElementById('x'),
+		'y' : document.getElementById('y'),
+		'z' : document.getElementById('z'),
+	}
+	// apply values from world json
+	name.value = world.name;
+	description.value = world.description;
+	author.value = world.author;
+	// change UI-Element behaviour
+	name.onchange = _ => world.name = name.value;
+	description.onchange = _ => world.description = description.value;
+	author.onchange = _ => world.author = author.value;
+
+	window.world = world;
+}
+
+/**
+ * Handle what happens if the user enter a file
+ */
+document.getElementById('load').onclick = _ => {
+	let input = document.createElement('input');
+		input.value = '';
+		input.type = 'file';
+	input.onchange = e => {
+		let file = input.files[0];
+		let reader = new FileReader();
+		reader.readAsText(file);
+		reader.onload = _ => menu = new Menu(MAP.World.fromJSON(JSON.parse(reader.result)));
+		reader.onerror = _ => console.error('FILE ERROR')
+	}
+	input.click();
+}
+
+/**
+ * Class that represents the editormenu
+ */
+class Menu {
+	/**
+	 * Create a Menu for a world
+	 * @param {module:map.World} world - The world which this menu is made for
+	 */
+	constructor(world) {
+		this.world = world;
+		this.name = world.name;
+		this.description = world.description;
+		this.author = world.author;
+		this.dimX = world.width;
+		this.dimY = world.height;
+		this.dimZ = world.depth;
+		//
+		this.addWorldToScene();
+		this.cubePicker = world.cube
+		window.world = this.world
+	}
+
+	get name() {return document.getElementById('name')}
+	set name(x) {
+		document.getElementById('name').value = x;
+		this.world.name = x;
+	}
+	get description() {return document.getElementById('description')}
+	set description(x) {
+		document.getElementById('description').value = x;
+		this.world.description = x;
+	}
+	get author() {return document.getElementById('author')}
+	set author(x) {
+		document.getElementById('author').value = x;
+		this.world.author = author;
+	}
+	get dimX() {return document.getElementById('dimX')}
+	set dimX(x) {
+		document.getElementById('dimX').value = x;
+		// TODO: change world size
+	}
+	get dimY() {return document.getElementById('dimY')}
+	set dimY(x) {
+		document.getElementById('dimY').value = x;
+		// TODO: change world size
+	}
+	get dimZ() {return document.getElementById('dimZ')}
+	set dimZ(x) {
+		document.getElementById('dimZ').value = x;
+		// TODO: change world size
+	}
+	get cubePicker() {return document.getElementById('cubePicker')}
+	set cubePicker([...cube]) {
+		cube.forEach( c => this.cubePicker.appendChild(new CubeMenu(c).dom) )
+	}
+
+	/**
+	 * Add the world to the scene
+	 */
+	addWorldToScene() {
+		scene.add(meshifyCube(this.world.asCube));
+	}
+}
+
+/**
+ * A menu to edit information about a cube
+ */
+class CubeMenu {
+	/**
+	 * Generate a menu to edit cubes
+	 */
+	constructor(cube) {
+		this.cube = cube;
+		this._dom = document.createElement('div');
+		this._name = document.createElement('input');
+		this._author = document.createElement('input');
+
+		this._dom.appendChild(this._name);
+		this._dom.appendChild(this._author);
+		this._dom.classList.add('cube');
+		this._author.classList.add('author');
+
+		this.name = cube.name;
+		this.author = cube.author;
+	}
+
+	/**
+	 * Preview the cube in a small rendered image
+	 */
+	get preview() {
+
+	}
+
+	get name() {return this._name}
+	set name(x) {this._name.value = x}
+
+	get author() {return this._author}
+	set author(x) {this._author.value = x}
+
+	/**
+	 * Getter for the HTML that represents this menu
+	 */
+	get dom() {return this._dom}
+}
