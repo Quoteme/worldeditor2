@@ -63,8 +63,10 @@ function onWindowResize() {
 function meshifyCube(cube) {
 	let group = new THREE.Group();
 	cube.voxPairs.forEach( ([v,m]) => {
-		let geometry = MESHER.voxToGeometry(v);
-		let material = new THREE.MeshBasicMaterial({
+		let geometry = MESHER.voxToGeometry(v, MESHER.greedy);
+		geometry.computeFaceNormals();
+		geometry.computeVertexNormals();
+		let material = new THREE.MeshLambertMaterial({
 			color: new THREE.Color(m.r,m.g,m.b),
 			opacity: m.a
 			});
@@ -180,7 +182,11 @@ class Menu {
 	 * Add the world to the scene
 	 */
 	addWorldToScene() {
+		scene.add( new THREE.AmbientLight(0xffffff, 0.5) )
 		scene.add(meshifyCube(this.world.asCube));
+		let light = new THREE.PointLight( 0xffffff, 1, 300 )
+			light.position.set(-10,100,-20)
+		scene.add(light)
 	}
 }
 
@@ -196,21 +202,64 @@ class CubeMenu {
 		this._dom = document.createElement('div');
 		this._name = document.createElement('input');
 		this._author = document.createElement('input');
+		this._preview = new Image();
 
-		this._dom.appendChild(this._name);
-		this._dom.appendChild(this._author);
+		this._dom.appendChild(this.preview);
+		this._dom.appendChild(this.name);
+		this._dom.appendChild(this.author);
 		this._dom.classList.add('cube');
 		this._author.classList.add('author');
+		this._preview.classList.add('preview')
 
 		this.name = cube.name;
 		this.author = cube.author;
 	}
 
 	/**
+	 * Generate the preview image of the cube
+	 * this is only needed, if the image was not rendered before
+	 * or if changes were made to the cube.
+	 * @example
+	 * // some changes were made to the cube data
+	 * cube.generatePreview() // now the changes are visible
+	 */
+	generatePreview() {
+		let camera = new THREE.OrthographicCamera(
+			-this.cube.radius,this.cube.radius,-this.cube.radius,this.cube.radius, 0.1, 200)
+		camera.position.set(
+			this.cube.width,
+			this.cube.height,
+			this.cube.depth);
+		camera.lookAt(new THREE.Vector3(...this.cube.center));
+		let scene = new THREE.Scene();
+		scene.add( new THREE.AmbientLight( 0xffffff, 0.3 ) )
+		let light = new THREE.PointLight( 0xffffff,1,100 );
+			light.position.set(
+				-this.cube.radius*1.5,
+				-this.cube.radius*1.0,
+				this.cube.radius*0.5)
+		scene.add(light)
+		let mesh  = meshifyCube(this.cube);
+		scene.add(mesh);
+		console.log(mesh, this.cube);
+		let renderer = new THREE.WebGLRenderer( {
+				antialias: true,
+				preserveDrawingBuffer: true } );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( 150, 150 );
+		renderer.render(scene, camera);
+		this._preview.src = renderer.domElement.toDataURL( 'image/png' )
+	}
+
+	/**
 	 * Preview the cube in a small rendered image
 	 */
 	get preview() {
-
+		// DEBUG:
+		this._preview.onload = _ => console.log(this._preview);
+		if( this._preview.src == "" )
+			this.generatePreview();
+		return this._preview
 	}
 
 	get name() {return this._name}

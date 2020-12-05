@@ -234,6 +234,16 @@ export class Cube {
 	get depth() { return this.vox[0][0].length }
 
 	/**
+	 * Center of the cube
+	 */
+	get center() { return [this.width/2, this.height/2, this.depth/2] }
+
+	/**
+	 * Radius the cube has from it's center to its corners
+	 */
+	get radius() { return Math.hypot(...this.center) }
+
+	/**
 	 * Get all different voxels used in this cube
 	 * @returns {Voxel[]}
 	 */

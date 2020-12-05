@@ -39,18 +39,27 @@ body {
 }
 
 #menu #cubePicker {
-	display:grid;
-	grid-template-columns: 1fr 1fr 1fr;
-	column-gap: 3px;
-	row-gap: 3px;
+	display:flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	align-items: center;
+	align-content:center;
 }
 
 #menu #cubePicker .cube{
 	text-align: center;
+	width: 30%;
 	background-color: #222;
+	border-radius: 6px;
 }
 #menu #cubePicker .cube input{
 	box-sizing: border-box;
 	width: 95%;
 	padding: 3px;
+}
+#menu #cubePicker .preview {
+	min-height: 30px;
+	overflow: hidden;
+	border-radius: 6px;
+	width: 100%
 }
