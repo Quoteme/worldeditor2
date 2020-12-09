@@ -20,9 +20,9 @@ export class World {
 	/**
 	 * Generate a world
 	 * @see Cube
-	 * @param {string} name - Name of the world
-	 * @param {string} description - Description of this world
-	 * @param {Cube[]} cube - A list of cubes which are used in this world
+	 * @param {string} name='' - Name of the world
+	 * @param {string} description='' - Description of this world
+	 * @param {Cube[]} cube=[] - A list of cubes which are used in this world
 	 * @param {id[][][]} space - A 3d Array of id's to the cube
 	 *                               used at each point in space
 	 */
@@ -205,11 +205,11 @@ export class Cube {
 	/**
 	 * Create a Block
 	 * @see Voxel
-	 * @param {string} name - Name of the Cube
-	 * @param {string} description - A short usecase for this Cube
+	 * @param {string} name='' - Name of the Cube
+	 * @param {string} description='' - A short usecase for this Cube
 	 * @param {Voxel[][][]} vox - Voxel data as a 3D array of voxels
 	 *                            Empty elements mean no voxel present
-	 * @param {string} author
+	 * @param {string} author=''
 	 */
 	constructor(name='', description='', vox, author='') {
 		this.name = name;
@@ -344,10 +344,10 @@ export class Cube {
 class Voxel {
 	/**
 	 * Create a voxel
-	 * @param {number} r - Red value
-	 * @param {number} g - Green value
-	 * @param {number} b - Blue value
-	 * @param {number} a - Alpha/Opacity value
+	 * @param {number} r=0 - Red value
+	 * @param {number} g=0 - Green value
+	 * @param {number} b=0 - Blue value
+	 * @param {number} a=0 - Alpha/Opacity value
 	 */
 	constructor(r=0,g=0,b=0,a=0) {
 		this.r = r;

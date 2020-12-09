@@ -77,34 +77,6 @@ function meshifyCube(cube) {
 }
 
 /**
- * Load a map into memory and also make its information accessable
- * through the menu
- * @param {module:map.World} world
- */
-function load(world) {
-	world = MAP.World.fromJSON(JSON.parse(world))
-	// make all UI-elements accessable
-	let name = document.getElementById('name');
-	let description = document.getElementById('description')
-	let author = document.getElementById('author');
-	let dimension = {
-		'x' : document.getElementById('x'),
-		'y' : document.getElementById('y'),
-		'z' : document.getElementById('z'),
-	}
-	// apply values from world json
-	name.value = world.name;
-	description.value = world.description;
-	author.value = world.author;
-	// change UI-Element behaviour
-	name.onchange = _ => world.name = name.value;
-	description.onchange = _ => world.description = description.value;
-	author.onchange = _ => world.author = author.value;
-
-	window.world = world;
-}
-
-/**
  * Handle what happens if the user enter a file
  */
 document.getElementById('load').onclick = _ => {
@@ -141,6 +113,15 @@ class Menu {
 		this.addWorldToScene();
 		this.cubePicker = world.cube
 		window.world = this.world
+
+		document.getElementById('newCube').onclick = _ => {
+			console.log(this.world)
+			this.world.addCube(MAP.Cube.empty(
+											this.world.cubeWidth,
+											this.world.cubeHeight,
+											this.world.cubeDepth))
+			this.cubePicker = this.world.cube
+		}
 	}
 
 	get name() {return document.getElementById('name')}
@@ -175,6 +156,7 @@ class Menu {
 	}
 	get cubePicker() {return document.getElementById('cubePicker')}
 	set cubePicker([...cube]) {
+		this.cubePicker.innerHTML = '';
 		cube.forEach( c => this.cubePicker.appendChild(new CubeMenu(c).dom) )
 	}
 
@@ -196,6 +178,7 @@ class Menu {
 class CubeMenu {
 	/**
 	 * Generate a menu to edit cubes
+	 * @param {module:map.Cube} cube
 	 */
 	constructor(cube) {
 		this.cube = cube;
@@ -209,7 +192,9 @@ class CubeMenu {
 		this._dom.appendChild(this.author);
 		this._dom.classList.add('cube');
 		this._author.classList.add('author');
-		this._preview.classList.add('preview')
+		this._preview.classList.add('preview');
+		this._name.placeholder = 'Name';
+		this._author.placeholder = 'Author';
 
 		this.name = cube.name;
 		this.author = cube.author;
@@ -249,6 +234,7 @@ class CubeMenu {
 			renderer.setSize( 150, 150 );
 		renderer.render(scene, camera);
 		this._preview.src = renderer.domElement.toDataURL( 'image/png' )
+		this._preview.onclick = _ => this.edit();
 	}
 
 	/**
@@ -272,4 +258,89 @@ class CubeMenu {
 	 * Getter for the HTML that represents this menu
 	 */
 	get dom() {return this._dom}
+
+	/**
+	 * Edit this cube
+	 */
+	edit() {
+		console.log(this.cube);
+		new CubeEditMenu(this.cube);
+	}
+}
+
+/**
+ * Class that represents a pop-up that allows users to edit a cube
+ */
+class CubeEditMenu {
+	/**
+	 * Create a Pop-Up that allows for editing of the supplied cube
+	 * @param {module:map.Cube} cube - Cube to edit
+	 */
+	constructor(cube) {
+		this.cube = cube;
+		this._dom = document.createElement('div');
+		this._popup = document.createElement('div');
+		this._json = document.createElement('textarea');
+		this._save = document.createElement('button');
+		this._exit = document.createElement('button');
+
+		this._dom.classList.add('CubeEditMenu')
+		this._popup.classList.add('popup');
+		this._json.classList.add('json');
+		this._save.innerText = 'save';
+		this._exit.innerText = 'exit';
+
+		this._dom.appendChild(this._popup);
+		this._popup.appendChild(this._json);
+		this._popup.appendChild(this._save);
+		this._popup.appendChild(this._exit);
+
+		this.json = JSON.stringify(this.cube);
+		this._exit.onclick = _ => this.exit();
+		this.show();
+	}
+
+	/**
+	 * returns the dom-element that represents this CubeEditMenu
+	 * @returns {domElement}
+	 */
+	get dom() {
+		return this._dom;
+	}
+
+	/**
+	 * Gets the text inside the JSON element
+	 */
+	get json() {
+		return this._json.value;
+	}
+
+	/**
+	 * Sets the text inside the JSON element
+	 */
+	set json(v) {
+		this._json.value = v;
+	}
+
+	/**
+	 * Show this CubeEditMenu to the user
+	 */
+	show() {
+		document.body.appendChild(this.dom);
+		console.log(this.dom);
+	}
+
+	/**
+	 * Inverse operation of show - Closes the CubeEditMenu
+	 */
+	hide() {
+		this.dom.remove();
+	}
+
+	/**
+	 * Exit the CubeEditMenu
+	 */
+	exit() {
+		this.hide();
+	}
 }
