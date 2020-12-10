@@ -278,20 +278,29 @@ class CubeEditMenu {
 	 */
 	constructor(cube) {
 		this.cube = cube;
+		this.active = true;
 		this._dom = document.createElement('div');
 		this._popup = document.createElement('div');
+		this._editor = document.createElement('div');
 		this._json = document.createElement('textarea');
+		this._import = document.createElement('button');
+		this._export = document.createElement('button');
 		this._save = document.createElement('button');
 		this._exit = document.createElement('button');
 
 		this._dom.classList.add('CubeEditMenu')
 		this._popup.classList.add('popup');
 		this._json.classList.add('json');
+		this._import.innerText = 'import';
+		this._export.innerText = 'export';
 		this._save.innerText = 'save';
 		this._exit.innerText = 'exit';
 
 		this._dom.appendChild(this._popup);
+		this._popup.appendChild(this._editor);
 		this._popup.appendChild(this._json);
+		this._popup.appendChild(this._import);
+		this._popup.appendChild(this._export);
 		this._popup.appendChild(this._save);
 		this._popup.appendChild(this._exit);
 
@@ -323,11 +332,55 @@ class CubeEditMenu {
 	}
 
 	/**
+	 * Initialize the editor
+	 */
+	startEditor() {
+		const init = _ => {
+			camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000 );
+			camera.position.set(
+				this.cube.center[0]-this.cube.radius*1.5,
+				this.cube.center[1]+this.cube.radius*1.5,
+				this.cube.center[2]-this.cube.radius*1.5,
+			)
+			camera.lookAt(new THREE.Vector3(...this.cube.center));
+			scene = new THREE.Scene();
+			mesh = meshifyCube(this.cube);
+			scene.add(new THREE.AmbientLight(0xffffff, 0.3))
+			let light = new THREE.PointLight( 0xffffff,1,100 );
+				light.position.set(
+					-this.cube.radius*2,
+					+this.cube.radius*2,
+					+this.cube.radius*2)
+			scene.add(light)
+			scene.add(mesh)
+			renderer = new THREE.WebGLRenderer( { antialias: true } );
+			renderer.setPixelRatio( window.devicePixelRatio );
+			renderer.setSize( window.innerWidth/2, window.innerHeight/2 );
+			controls = new OrbitControls( camera, renderer.domElement );
+			controls.target.set(...this.cube.center);
+			this._popup.appendChild(renderer.domElement);
+			window.addEventListener('resize', _ => {
+				camera.aspect = window.innerWidth/window.innerHeight;
+				camera.updateProjectionMatrix();
+				renderer.setSize(window.innerWidth/2, window.innerHeight/2)
+			})
+		}
+		const animate = _ => {
+			if( this.active )
+				requestAnimationFrame(animate);
+			renderer.render(scene,camera);
+		}
+		let camera, controls, scene, mesh, renderer;
+		init();
+		animate();
+	}
+
+	/**
 	 * Show this CubeEditMenu to the user
 	 */
 	show() {
+		this.startEditor();
 		document.body.appendChild(this.dom);
-		console.log(this.dom);
 	}
 
 	/**
